@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: black;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+
+        .chat-container {
+            width: 400px;
+            max-width: 90%;
+            background: #222;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(255, 0, 0, 0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            background: #444;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 5px 0;
+            width: fit-content;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            background: linear-gradient(to bottom right, pink, red);
+            color: white;
+        }
+
+        .message.file {
+            background: #555;
+            color: #ff8c8c;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .message img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            background: #111;
+            align-items: center;
+        }
+
+        .chat-input input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            background: #333;
+            color: white;
+            outline: none;
+        }
+
+        .send-btn {
+            background: linear-gradient(to bottom right, pink, red);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .upload-btn {
+            background: linear-gradient(to bottom right, pink, red);
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 50%;
+            font-size: 18px;
+            margin-right: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .upload-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages"></div>
+
+        <div class="chat-input">
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">+</button>
+            <input type="file" id="fileInput" class="hidden" accept="image/*, .pdf, .zip, .txt" onchange="uploadFile(event)">
+            <input type="text" id="messageInput" placeholder="Type a message...">
+            <button class="send-btn" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const messageText = messageInput.value.trim();
+
+            if (messageText !== "") {
+                addMessage(messageText, "sent");
+                messageInput.value = "";
+            }
+        }
+
+        function uploadFile(event) {
+            const file = event.target.files[0]; 
+            if (file) {
+                const fileType = file.type;
+
+                if (fileType.startsWith("image/")) {
+                    // If it's an image, show it in chat
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        addImage(e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    // Otherwise, display the file name as a clickable link
+                    const fileName = file.name;
+                    addFileMessage(fileName, file);
+                }
+            }
+        }
+
+        function addMessage(text, type) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', type);
+            messageElement.innerText = text;
+
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addImage(imageSrc) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', 'sent');
+
+            const img = document.createElement('img');
+            img.src = imageSrc;
+            img.alt = "Uploaded Image";
+
+            messageElement.appendChild(img);
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addFileMessage(fileName, file) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', 'file');
+            messageElement.innerText = `📎 ${fileName}`;
+
+            messageElement.onclick = function() {
+                const url = URL.createObjectURL(file);
+                window.open(url, "_blank");
+            };
+
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        document.getElementById('messageInput').addEventListener("keypress", function(event) {
+            if (event.key === "Enter") sendMessage();
+        });
+    </script>
+
+</body>
+</html>
